@@ -1065,7 +1065,7 @@
         
     BOOL hasExceptionTouch = NO;
     if ([touch.view isKindOfClass:[UIControl class]] && [gestureRecognizer isKindOfClass:[UITapGestureRecognizer class]]) {
-        if (![touch.view isKindOfClass:NSClassFromString(@"UINavigationButton")]) hasExceptionTouch = YES;
+        /*if (![touch.view isKindOfClass:NSClassFromString(@"UINavigationButton")])*/ hasExceptionTouch = YES;
     }
 
     BOOL hasExceptionDelegate = NO;
