@@ -225,8 +225,11 @@
 }
 
 - (void) pushViewController:(UIViewController *)controller onDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated forceToPopPush:(BOOL)forcePopPush {
-    [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:willPushController:) withParam:controller];
     
+    if (_animationInProgress) return;
+
+    [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:willPushController:) withParam:controller];
+
     // get the side direction to close
     PPRevealSideDirection directionToClose = [self getSideToClose];
     
@@ -365,9 +368,11 @@
 }
 
 - (void) popViewControllerWithNewCenterController:(UIViewController *)centerController animated:(BOOL)animated andPresentNewController:(UIViewController *)controllerToPush withDirection:(PPRevealSideDirection)direction andOffset:(CGFloat)offset {
+
+    if (_animationInProgress) return;
     
     [self informDelegateWithOptionalSelector:@selector(pprevealSideViewController:willPopToController:) withParam:centerController];
-    
+
     PPRevealSideDirection directionToClose = [self getSideToClose];
     if (directionToClose == PPRevealSideDirectionNone && _popFromPanGesture)
     {
@@ -474,7 +479,18 @@
                      withOffset:DefaultOffset];
 }
 
-- (void) preloadViewController:(UIViewController*)controller forSide:(PPRevealSideDirection)direction withOffset:(CGFloat)offset {
+- (void) preloadViewController:(UIViewController*)controller forSide:(PPRevealSideDirection)direction withOffset:(CGFloat)offset
+{
+    [self preloadViewController:controller
+                        forSide:direction
+                     withOffset:offset
+                   forceRemoval:NO];
+}
+
+- (void) preloadViewController:(UIViewController*)controller forSide:(PPRevealSideDirection)direction withOffset:(CGFloat)offset forceRemoval:(BOOL)force
+{
+    if (direction == [self sideDirectionOpened] && !force) return;
+    
     UIViewController *existingController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
     if (existingController != controller) {
         
@@ -1411,6 +1427,9 @@ static char revealSideViewControllerKey;
     // because we can't ask the navigation controller to set to the pushed controller the revealSideViewController !
     if (!controller && self.navigationController)
         controller = self.navigationController.revealSideViewController;
+    
+    if (!controller && self.tabBarController)
+        controller = self.tabBarController.revealSideViewController;
     
     return controller;
 }
