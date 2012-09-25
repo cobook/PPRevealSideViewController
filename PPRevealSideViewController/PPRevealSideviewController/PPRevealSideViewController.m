@@ -10,6 +10,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 
+
 @interface PPRevealSideViewController (Private)
 - (void) setRootViewController:(UIViewController *)controller replaceToOrigin:(BOOL)replace;
 - (void) setRootViewController:(UIViewController*)controller;
@@ -1430,6 +1431,9 @@ static char revealSideViewControllerKey;
     
     if (!controller && self.tabBarController)
         controller = self.tabBarController.revealSideViewController;
+  
+    if (!controller && self.parentViewController)
+        controller = self.parentViewController.revealSideViewController;
     
     return controller;
 }
