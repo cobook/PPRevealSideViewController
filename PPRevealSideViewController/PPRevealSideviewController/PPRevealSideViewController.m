@@ -159,7 +159,7 @@
 #define DefaultOffset 70.0
 #define DefaultOffsetBouncing 5.0
 
-#define OpenAnimationTime 0.3
+#define OpenAnimationTime 0.15
 #define OpenAnimationTimeBouncingRatio 0.3
 
 - (void) pushViewController:(UIViewController*)controller onDirection:(PPRevealSideDirection)direction animated:(BOOL)animated {
