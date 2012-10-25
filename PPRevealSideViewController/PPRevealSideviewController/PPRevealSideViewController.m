@@ -79,6 +79,13 @@
         _gestures = [[NSMutableArray alloc] init];
         
         [self setRootViewController:rootViewController];
+        
+        _noTouchiiOverlay = [[UIView alloc] initWithFrame:CGRectZero];
+        _noTouchiiOverlay.backgroundColor = [UIColor clearColor];
+        _noTouchiiParent = rootViewController.view;
+        [_noTouchiiParent addSubview:_noTouchiiOverlay];
+        [_noTouchiiParent sendSubviewToBack:_noTouchiiOverlay];
+        
     }
     return self;
 }
@@ -178,6 +185,7 @@
 #define BOUNCE_ERROR_OFFSET 14.0
 
 - (void) pushOldViewControllerOnDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated {
+
     UIViewController *oldController = [_viewControllers objectForKey:[NSNumber numberWithInt:direction]];
     if (oldController) {
         [self pushViewController:oldController
@@ -226,6 +234,10 @@
 }
 
 - (void) pushViewController:(UIViewController *)controller onDirection:(PPRevealSideDirection)direction withOffset:(CGFloat)offset animated:(BOOL)animated forceToPopPush:(BOOL)forcePopPush {
+    
+    // add no touchii
+    _noTouchiiOverlay.frame = _rootViewController.view.bounds;
+    [_noTouchiiParent bringSubviewToFront:_noTouchiiOverlay];
     
     if (_animationInProgress) return;
 
@@ -364,6 +376,10 @@
 }
 
 - (void) popViewControllerAnimated:(BOOL)animated {
+    
+    // remove no touchii
+    [_noTouchiiParent sendSubviewToBack:_noTouchiiOverlay];
+
     [self popViewControllerWithNewCenterController:_rootViewController
                                           animated:animated];
 }
@@ -744,6 +760,7 @@
     PP_RELEASE(panGesture);
 }
 
+
 - (void) addPanGestureToController:(UIViewController*)controller {
     
     BOOL isClosed = ([self getSideToClose] == PPRevealSideDirectionNone) ? YES : NO;
@@ -852,6 +869,8 @@
 - (void) addGesturesToCenterController 
 {
     [self addGesturesToController:[self getControllerForGestures]];
+    [self addPanGestureToView:_noTouchiiOverlay];
+    [self addTapGestureToView:_noTouchiiOverlay];
 }
 
 - (void) removeAllPanGestures {
@@ -1291,12 +1310,9 @@
         if (shouldClose) {
             _popFromPanGesture = YES;
             [self popViewControllerAnimated:YES];
-            
-            // remove no touchii
         }
         else
         {
-            // remove no touchii
             _shouldNotCloseWhenPushingSameDirection = YES;
             [self pushOldViewControllerOnDirection:_currentPanDirection 
                                         withOffset:[self getOffsetForDirection:_currentPanDirection andInterfaceOrientation:UIInterfaceOrientationPortrait] // we get the interface orientation for Portrait since we set it just after.
