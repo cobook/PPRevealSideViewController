@@ -1197,7 +1197,7 @@
         panGesture.enabled = YES;
         return;
     }
-
+     
     switch (_currentPanDirection) {
         case PPRevealSideDirectionLeft:
             offset = CGRectGetWidth(self.rootViewController.view.frame) - x;
@@ -1217,6 +1217,7 @@
     
     offset = MAX(offset, [self getOffsetForDirection:_currentPanDirection]);
 
+    /*
     // test if whe changed direction
     if (_currentPanDirection == PPRevealSideDirectionRight || _currentPanDirection == PPRevealSideDirectionLeft) {
         if (offset >= CGRectGetWidth(self.rootViewController.view.frame)-OFFSET_TRIGGER_CHANGE_DIRECTION) {
@@ -1261,6 +1262,7 @@
             }
         } 
     }
+     */
     self.rootViewController.view.frame = [self getSlidingRectForOffset:offset
                                                           forDirection:_currentPanDirection];  
     
