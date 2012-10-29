@@ -380,8 +380,14 @@
     // remove no touchii
     [_noTouchiiParent sendSubviewToBack:_noTouchiiOverlay];
 
-    [self popViewControllerWithNewCenterController:_rootViewController
-                                          animated:animated];
+    // if animation is in progress, schedule pop after a few millisecs
+    if (_animationInProgress && self.sideDirectionOpened != PPRevealSideDirectionNone) {
+        [self performSelector:@selector(popViewControllerAnimated:) withObject:[NSNumber numberWithBool:animated] afterDelay:.3];
+    } else {
+        [self popViewControllerWithNewCenterController:_rootViewController
+                                              animated:animated];
+    }
+    
 }
 
 - (void) popViewControllerWithNewCenterController:(UIViewController *)centerController animated:(BOOL)animated andPresentNewController:(UIViewController *)controllerToPush withDirection:(PPRevealSideDirection)direction andOffset:(CGFloat)offset {
