@@ -1,3 +1,4 @@
+
 //
 //  PPRevealSideViewController.m
 //  PPRevealSideViewController
@@ -647,11 +648,20 @@
             
             if (PPSystemVersionGreaterOrEqualThan(5.0))
                 [_rootViewController didMoveToParentViewController:self];
-            
-            [_rootViewController addObserver:self
-                                  forKeyPath:@"view.frame"
-                                     options:NSKeyValueObservingOptionNew
-                                     context:NULL];
+
+            @try {
+                [_rootViewController addObserver:self
+                                      forKeyPath:@"view.frame"
+                                         options:NSKeyValueObservingOptionNew
+                                         context:NULL];
+            }
+            @catch (NSException *exception) {
+                
+            }
+            @finally {
+                
+            }
+
             
             [self addGesturesToCenterController];
             
@@ -1374,11 +1384,6 @@
 - (void) viewWillUnload
 {
     [super viewWillUnload];
-}
-
-- (void)didReceiveMemoryWarning
-{
-    [super didReceiveMemoryWarning];
     @try {
         [_rootViewController removeObserver:self forKeyPath:@"view.frame"];
     }
@@ -1388,6 +1393,11 @@
     @finally {
         
     }
+}
+
+- (void)didReceiveMemoryWarning
+{
+    [super didReceiveMemoryWarning];
 }
 
 - (void)viewDidUnload
