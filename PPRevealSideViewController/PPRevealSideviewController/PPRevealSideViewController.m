@@ -930,6 +930,8 @@
 {
     _rootViewController.view.frame = frame;
     _shadowView.frame = frame;
+    [self.view bringSubviewToFront:_shadowView];
+    [self.view bringSubviewToFront:_rootViewController.view];
 }
 
 
