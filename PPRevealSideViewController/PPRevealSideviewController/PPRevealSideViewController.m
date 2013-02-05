@@ -48,7 +48,11 @@
 - (CGFloat) getOffsetForDirection:(PPRevealSideDirection)direction;
 @end
 
-@implementation PPRevealSideViewController
+@implementation PPRevealSideViewController {
+    UIView *_shadowView;
+}
+
+
 @synthesize rootViewController = _rootViewController;
 @synthesize panInteractionsWhenClosed = _panInteractionsWhenClosed;
 @synthesize panInteractionsWhenOpened = _panInteractionsWhenOpened;
@@ -202,14 +206,14 @@
                                  else
                                      offsetBounce = CGRectGetHeight(_rootViewController.view.frame)-BOUNCE_ERROR_OFFSET;  
                                  
-                                 _rootViewController.view.frame = [self getSlidingRectForOffset:offsetBounce
-                                                                                   forDirection:direction];
+                                 self.rootViewFrame = [self getSlidingRectForOffset:offsetBounce
+                                                                       forDirection:direction];
                              } completion:^(BOOL finished) {
                                  [UIView animateWithDuration:OpenAnimationTime*0.15
                                                        delay:0.0
                                                      options:UIViewAnimationCurveEaseInOut
                                                   animations:^{
-                                                      _rootViewController.view.frame = originalFrame;
+                                                      self.rootViewFrame = originalFrame;
                                                   } completion:^(BOOL finished) {
                                                       _animationInProgress = NO;
                                                   }];
@@ -305,8 +309,8 @@
     
     
     void (^openAnimBlock)(void) = ^(void) {
-        controller.view.hidden = NO;        
-        _rootViewController.view.frame = rootFrame;
+        controller.view.hidden = NO;
+        self.rootViewFrame = rootFrame;
     };
     
     // replace the view since IB add some offsets with the status bar if enabled
@@ -331,7 +335,7 @@
                                                        delay:0.0
                                                      options:options
                                                   animations:^{
-                                                      _rootViewController.view.frame = [self getSlidingRectForOffset:offset forDirection:direction];
+                                                      self.rootViewFrame = [self getSlidingRectForOffset:offset forDirection:direction];
                                                   } completion:^(BOOL finished) {
                                                       _animationInProgress = NO;
                                                       if (PPSystemVersionGreaterOrEqualThan(5.0)) [controller didMoveToParentViewController:self];
@@ -398,7 +402,7 @@
                 CGRect newFrame = _rootViewController.view.frame;
                 newFrame.origin.x = 0.0;
                 newFrame.origin.y = 0.0;
-                _rootViewController.view.frame = newFrame;
+                self.rootViewFrame = newFrame;
             };
             
             // this is the completion block when you pop then push the new controller
@@ -452,7 +456,7 @@
                             options:options
                          animations:^{
                              // this will open completely the view
-                             _rootViewController.view.frame = [self getSlidingRectForOffset:0.0 forDirection:directionToOpen];
+                             self.rootViewFrame = [self getSlidingRectForOffset:0.0 forDirection:directionToOpen];
                          } completion:bigAnimBlock];
     }
     else
@@ -537,12 +541,12 @@
         if (animated)
             [UIView animateWithDuration:0.3
                              animations:^{
-                                 _rootViewController.view.frame = [self getSlidingRectForOffset:offset
-                                                                                   forDirection:direction];
+                                 self.rootViewFrame = [self getSlidingRectForOffset:offset
+                                                                       forDirection:direction];
                              }];
         else
-            _rootViewController.view.frame = [self getSlidingRectForOffset:offset
-                                                              forDirection:direction];
+            self.rootViewFrame = [self getSlidingRectForOffset:offset
+                                                  forDirection:direction];
     }
 }
 
@@ -666,7 +670,7 @@
             [self addGesturesToCenterController];
             
             if (replace)
-                _rootViewController.view.frame = self.view.bounds;
+                self.rootViewFrame = self.view.bounds;
         }
         
         [self didChangeValueForKey:@"rootViewController"];
@@ -679,20 +683,22 @@
 
 - (void) addShadow
 {
-    _rootViewController.view.layer.shadowOffset = CGSizeZero;
-    _rootViewController.view.layer.shadowOpacity = 0.75f;
-    _rootViewController.view.layer.shadowRadius = 10.0f;
-    _rootViewController.view.layer.shadowColor = [UIColor blackColor].CGColor;
-    _rootViewController.view.layer.shadowPath = [UIBezierPath bezierPathWithRect:self.view.layer.bounds].CGPath;
-    _rootViewController.view.clipsToBounds = NO; 
+    if (!_shadowView) {
+        _shadowView = [[UIView alloc] initWithFrame:_rootViewController.view.frame];
+        _shadowView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        _shadowView.layer.shadowOffset = CGSizeZero;
+        _shadowView.layer.shadowOpacity = 0.75f;
+        _shadowView.layer.shadowRadius = 4.0;
+        _shadowView.layer.shadowColor = [UIColor blackColor].CGColor;
+        _shadowView.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:self.view.layer.bounds cornerRadius:3.0].CGPath;
+        [self.view addSubview:_shadowView];
+    }
 }
 
 - (void) removeShadow
 {
-    _rootViewController.view.layer.shadowPath = nil;
-    _rootViewController.view.layer.shadowOpacity = 0.0f;
-    _rootViewController.view.layer.shadowRadius = 0.0;
-    _rootViewController.view.layer.shadowColor = nil;
+    [_shadowView removeFromSuperview];
+    _shadowView = nil;
 }
 
 - (void) handleShadows {
@@ -729,8 +735,8 @@
         ||
         (direction == PPRevealSideDirectionBottom || direction == PPRevealSideDirectionTop)
         ) {
-        _rootViewController.view.frame = [self getSlidingRectForOffset:[self getOffsetForDirection:direction]
-                                                          forDirection:direction];
+        self.rootViewFrame = [self getSlidingRectForOffset:[self getOffsetForDirection:direction]
+                                              forDirection:direction];
     }
 }
 
@@ -918,6 +924,14 @@
         [controller didMoveToParentViewController:nil];
     }
 }
+
+
+- (void)setRootViewFrame:(CGRect)frame
+{
+    _rootViewController.view.frame = frame;
+    _shadowView.frame = frame;
+}
+
 
 #pragma mark Closed Controllers 
 
@@ -1254,8 +1268,8 @@
             }
         } 
     }
-    self.rootViewController.view.frame = [self getSlidingRectForOffset:offset
-                                                          forDirection:_currentPanDirection];  
+    self.rootViewFrame = [self getSlidingRectForOffset:offset
+                                          forDirection:_currentPanDirection];
     
     if (panGesture.state == UIGestureRecognizerStateEnded || panGesture.state == UIGestureRecognizerStateCancelled) {
         
