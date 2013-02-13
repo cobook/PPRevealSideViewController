@@ -692,6 +692,7 @@
         _shadowView.layer.shadowColor = [UIColor blackColor].CGColor;
         _shadowView.layer.shadowPath = [UIBezierPath bezierPathWithRoundedRect:self.view.layer.bounds cornerRadius:3.0].CGPath;
         [self.view addSubview:_shadowView];
+        [self.view bringSubviewToFront:_rootViewController.view];
     }
 }
 
